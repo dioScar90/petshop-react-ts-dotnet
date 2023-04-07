@@ -1,1 +1,4 @@
-
+backend/.vscode
+backend/bin
+backend/obj
+backend/appsettings.Development.json
