@@ -3,5 +3,5 @@ export interface IProduct {
     title: string;
     brand: string;
     createdAt: string;
-    updatedAt?: string;
+    updatedAt: string;
 }

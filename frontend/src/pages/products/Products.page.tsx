@@ -6,14 +6,27 @@ import { baseUrl } from "../../constants/url.constant";
 import { Button } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import moment from "moment";
+import { useNavigate, useLocation } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
+  const location = useLocation();
+  const redirect = useNavigate();
+
+  console.log(location);
 
   const fetchProductsList = async () => {
     try {
       const response = await axios.get<IProduct[]>(baseUrl);
       setProducts(response.data);
+      if (location?.state) {
+        Swal.fire({
+          icon: "success",
+          title: location?.state?.message,
+        });
+        redirect(location.pathname, { replace: true });
+      }
     } catch (error) {
       alert("An error occurred! " + error);
     }
@@ -23,7 +36,10 @@ const Products: React.FC = () => {
     fetchProductsList();
   }, []);
 
-  console.log(products);
+  // console.log(products);
+
+  const redirectToEditPage = (id: number) => redirect(`edit/${id}`)
+  const redirectToDeletePage = (id: number) => redirect(`delete/${id}`)
 
   return (
     <div className="products">
@@ -48,12 +64,16 @@ const Products: React.FC = () => {
                   <td>{prod.title}</td>
                   <td>{prod.brand}</td>
                   <td>{moment(prod.createdAt).fromNow()}</td>
-                  <td>{prod.updatedAt ? moment(prod.updatedAt).fromNow() : "Never yet"}</td>
                   <td>
-                    <Button variant="outlined" color="warning" sx={{ mx: 3 }}>
+                    {prod.updatedAt
+                      ? moment(prod.updatedAt).fromNow()
+                      : "Never yet"}
+                  </td>
+                  <td>
+                    <Button variant="outlined" color="warning" sx={{ mx: 3 }} onClick={() => redirectToEditPage(prod.id)}>
                       <Edit />
                     </Button>
-                    <Button variant="outlined" color="error">
+                    <Button variant="outlined" color="error" onClick={() => redirectToDeletePage(prod.id)}>
                       <Delete />
                     </Button>
                   </td>
