@@ -11,3 +11,13 @@
   },
   "Environment": "diogo"
 }
+
+
+
+
+// I should change in lanchsettings.json setting this part:
+// "https": "LaunchBrowser": true
+// 
+// to
+// 
+// "https": "LaunchBrowser": false
