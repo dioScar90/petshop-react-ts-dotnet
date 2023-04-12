@@ -18,7 +18,7 @@ const Products: React.FC = () => {
 
   const fetchProductsList = async () => {
     try {
-      const response = await axios.get<IProduct[]>(baseUrl);
+      const response = await axios.get<IProduct[]>(`${baseUrl}/true`);
       setProducts(response.data);
       if (location?.state) {
         Swal.fire({

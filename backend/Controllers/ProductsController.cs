@@ -25,6 +25,19 @@ namespace backend.Controllers
 
         // CRUD -> Creade - Read - Update - Delete
 
+        private Task<List<ProductEntity>> GetProductsToList(bool orderedByCreatedAt)
+        {
+            if (orderedByCreatedAt)
+                return _context.Products.Where(q => q.DeletedAt == null).OrderByDescending(q => q.CreatedAt).ToListAsync();
+            
+            return _context.Products.Where(q => q.DeletedAt == null).ToListAsync();
+        }
+
+        private Task<ProductEntity?> GetSpecificProduct(int id)
+        {
+            return _context.Products.FirstOrDefaultAsync(q => q.Id == id);
+        }
+
         // Create
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] CreateUpdateProctDto dto)
@@ -43,9 +56,13 @@ namespace backend.Controllers
 
         // Read
         [HttpGet]
-        public async Task<ActionResult<List<ProductEntity>>> GetAllProducts()
+        [Route("{orderedByCreatedAt:bool}")]
+        public async Task<ActionResult<List<ProductEntity>>> GetAllProducts([FromRoute] bool orderedByCreatedAt = false)
         {
-            var products = await _context.Products.OrderByDescending(q => q.CreatedAt).ToListAsync();
+            var products = await GetProductsToList(orderedByCreatedAt);
+            // var products = orderedByCreatedAt
+            //     ? await _context.Products.OrderByDescending(q => q.CreatedAt).ToListAsync()
+            //     : await _context.Products.ToListAsync();
 
             return Ok(products);
         }
@@ -54,7 +71,7 @@ namespace backend.Controllers
         [Route("{id}")]
         public async Task<ActionResult<ProductEntity>> GetProductById([FromRoute] int id)
         {
-            var product = await _context.Products.FirstOrDefaultAsync(q => q.Id == id);
+            var product = await GetSpecificProduct(id);
 
             if (product is null)
                 return NotFound("Product Not Found");
@@ -67,7 +84,7 @@ namespace backend.Controllers
         [Route("{id}")]
         public async Task<IActionResult> UpdateProduct([FromRoute] int id, [FromBody] CreateUpdateProctDto dto)
         {
-            var product = await _context.Products.FirstOrDefaultAsync(q => q.Id == id);
+            var product = await GetSpecificProduct(id);
 
             if (product is null)
                 return NotFound("Product Not Found");
@@ -86,12 +103,13 @@ namespace backend.Controllers
         [Route("{id}")]
         public async Task<IActionResult> DeleteProduct([FromRoute] int id)
         {
-            var product = await _context.Products.FirstOrDefaultAsync(q => q.Id == id);
+            var product = await GetSpecificProduct(id);
 
             if (product is null)
                 return NotFound("Product Not Found");
             
-            _context.Products.Remove(product);
+            // _context.Products.Remove(product);
+            product.DeletedAt = DateTime.Now;
             await _context.SaveChangesAsync();
 
             return Ok("Product Deleted Successfully");
